@@ -16,20 +16,30 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 app.use(express.json());
 
-app.post("/ai/summary", async (req, res) => {
+app.get("/health", (req, res) => {
+  res.json({ status: "ok" });
+});
+
+app.post("/api/summarize", async (req, res) => {
   try {
-    const { text } = req.body;
+    const { text, mode } = req.body;
     if (!text) {
       return res.status(400).json({ error: "Text is required" });
     }
 
+    let prompt = `Summarize the following text: ${text}`;
+    if (mode === "bullets") {
+      prompt = `Summarize the following text in bullet points: ${text}`;
+    } else if (mode === "chapter") {
+      prompt = `Summarize the following text chapter-wise: ${text}`;
+    }
+
     const model = genAI.getGenerativeModel({ model: "gemini-1.0-pro" });
-    const prompt = `Summarize the following text: ${text}`;
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const summary = response.text();
 
-    res.json({ summary });
+    res.json({ result: summary });
   } catch (error) {
     console.error("Error generating summary:", error);
     res.status(500).json({ error: "Failed to generate summary" });
