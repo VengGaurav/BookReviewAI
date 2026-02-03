@@ -6,7 +6,7 @@ const app = express();
 
 // Check if GEMINI_API_KEY is loaded
 if (!process.env.GEMINI_API_KEY) {
-  console.error("Error: GEMINI_API_KEY is not defined in .env file");
+  console.error("Error: GEMINI_API_KEY environment variable is not set");
   process.exit(1);
 } else {
   console.log("GEMINI_API_KEY loaded successfully");
