@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "server": "node server/aiServer.js"
+    "server": "node server/aiServer.js",
+    "start": "node server/server.js"
   },
   "dependencies": {
     "react": "^18.2.0",
