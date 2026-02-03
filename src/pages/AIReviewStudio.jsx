@@ -96,9 +96,6 @@ export const AIReviewStudio = () => {
       const apiMode = modeMap[summaryMode] || "short";
       const text = book.description || book.aiSummary || "No text available";
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60000);
-
       const response = await fetch(
         "https://bookreviewai.onrender.com/api/summarize",
         {
@@ -107,11 +104,8 @@ export const AIReviewStudio = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ text, mode: apiMode }),
-          signal: controller.signal,
         },
       );
-
-      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
@@ -120,12 +114,8 @@ export const AIReviewStudio = () => {
       const data = await response.json();
       setSummaryOut(data.result || "No summary generated");
     } catch (error) {
-      if (error.name === "AbortError") {
-        setSummaryOut("Request timed out. Please try again.");
-      } else {
-        console.error("Summary generation failed:", error);
-        setSummaryOut("Summary could not be generated. Please try again.");
-      }
+      console.error("Summary generation failed:", error);
+      setSummaryOut("Summary could not be generated. Please try again.");
     } finally {
       setLoading((l) => ({ ...l, summary: false }));
     }
