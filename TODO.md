@@ -1,0 +1,5 @@
+- [ ] Edit server/server.js: Remove /api/summarize endpoint
+- [ ] Edit server/server.js: Add /api/ai POST endpoint with switch/case for modes (30second, eli10, chapter, bullet, review, chat, compare)
+- [ ] Edit server/server.js: Add /health GET route
+- [ ] Update frontend fetch calls in AIReviewStudio.jsx (provide example)
+- [ ] Test /health and /api/ai endpoints

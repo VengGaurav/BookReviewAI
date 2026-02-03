@@ -78,39 +78,38 @@ export const AIReviewStudio = () => {
   const generateReview = async () => {
     if (!requireBook()) return;
     setLoading((l) => ({ ...l, review: true }));
-    const out = await aiService.generateReview(book, tone);
-    setReviewOut(out);
-    setLoading((l) => ({ ...l, review: false }));
+    try {
+      const response = await fetch("https://bookreviewai.onrender.com/api/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode: "review",
+          text: book.description || book.aiSummary || "No text available",
+          tone,
+        }),
+      });
+      if (!response.ok) throw new Error(`API error: ${response.status}`);
+      const data = await response.json();
+      setReviewOut(data.result || "No review generated");
+    } catch (error) {
+      console.error("Review generation failed:", error);
+      setReviewOut("Review could not be generated. Please try again.");
+    } finally {
+      setLoading((l) => ({ ...l, review: false }));
+    }
   };
 
   const generateSummary = async () => {
     if (!requireBook() || loading.summary) return;
     setLoading((l) => ({ ...l, summary: true }));
     try {
-      const modeMap = {
-        "30second": "short",
-        chapter: "chapter",
-        bullet: "bullets",
-        eli10: "short",
-      };
-      const apiMode = modeMap[summaryMode] || "short";
       const text = book.description || book.aiSummary || "No text available";
-
-      const response = await fetch(
-        "https://bookreviewai.onrender.com/api/summarize",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ text, mode: apiMode }),
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
-      }
-
+      const response = await fetch("https://bookreviewai.onrender.com/api/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: summaryMode, text }),
+      });
+      if (!response.ok) throw new Error(`API error: ${response.status}`);
       const data = await response.json();
       setSummaryOut(data.result || "No summary generated");
     } catch (error) {
@@ -127,17 +126,55 @@ export const AIReviewStudio = () => {
     setChatInput("");
     setChatMessages((m) => [...m, { role: "user", text: msg }]);
     setLoading((l) => ({ ...l, chat: true }));
-    const out = await aiService.chatWithBook(book, persona, msg);
-    setChatMessages((m) => [...m, { role: "ai", text: out }]);
-    setLoading((l) => ({ ...l, chat: false }));
+    try {
+      const text = book.description || book.aiSummary || "No text available";
+      const response = await fetch("https://bookreviewai.onrender.com/api/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: "chat", text, persona, message: msg }),
+      });
+      if (!response.ok) throw new Error(`API error: ${response.status}`);
+      const data = await response.json();
+      setChatMessages((m) => [
+        ...m,
+        { role: "ai", text: data.result || "No response" },
+      ]);
+    } catch (error) {
+      console.error("Chat failed:", error);
+      setChatMessages((m) => [
+        ...m,
+        { role: "ai", text: "Chat could not be generated. Please try again." },
+      ]);
+    } finally {
+      setLoading((l) => ({ ...l, chat: false }));
+    }
   };
 
   const compare = async () => {
     if (!requireBook() || !userReview.trim()) return;
     setLoading((l) => ({ ...l, compare: true }));
-    const out = await aiService.compareReviews(book, userReview.trim());
-    setComparison(out);
-    setLoading((l) => ({ ...l, compare: false }));
+    try {
+      const text = book.description || book.aiSummary || "No text available";
+      const response = await fetch("https://bookreviewai.onrender.com/api/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode: "compare",
+          text,
+          userReview: userReview.trim(),
+        }),
+      });
+      if (!response.ok) throw new Error(`API error: ${response.status}`);
+      const data = await response.json();
+      // Assuming the response is a JSON string, parse it
+      const parsed = JSON.parse(data.result);
+      setComparison(parsed);
+    } catch (error) {
+      console.error("Comparison failed:", error);
+      setComparison(null);
+    } finally {
+      setLoading((l) => ({ ...l, compare: false }));
+    }
   };
 
   const hasBooks = bookOptions.length > 0;
