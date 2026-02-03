@@ -16,11 +16,17 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 app.use(express.json());
 
+app.get("/", (req, res) => {
+  console.log("GET / request received");
+  res.json({ message: "Server is running" });
+});
+
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
 app.post("/api/summarize", async (req, res) => {
+  console.log("POST /api/summarize request received:", req.body);
   try {
     const { text, mode } = req.body;
     if (!text) {
@@ -34,20 +40,21 @@ app.post("/api/summarize", async (req, res) => {
       prompt = `Summarize the following text chapter-wise: ${text}`;
     }
 
+    console.log(
+      "Calling Gemini API with prompt:",
+      prompt.substring(0, 100) + "...",
+    );
     const model = genAI.getGenerativeModel({ model: "gemini-1.0-pro" });
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const summary = response.text();
+    console.log("Gemini API response received, length:", summary.length);
 
     res.json({ result: summary });
   } catch (error) {
     console.error("Error generating summary:", error);
     res.status(500).json({ error: "Failed to generate summary" });
   }
-});
-
-app.get("/", (req, res) => {
-  res.json({ message: "Server is running" });
 });
 
 const PORT = process.env.PORT || 3000;
