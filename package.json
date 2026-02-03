@@ -18,7 +18,8 @@
     "recharts": "^2.10.0",
     "lucide-react": "^0.263.1",
     "express": "^4.19.0",
-    "openai": "^4.28.0"
+    "openai": "^4.28.0",
+    "@google/generative-ai": "^0.24.1"
   },
   "devDependencies": {
     "@types/react": "^18.2.0",
